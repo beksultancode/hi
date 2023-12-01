@@ -1,10 +1,80 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group = 'io.github.beksultancode'
+archivesBaseName = "hi"
 version = '1.0-SNAPSHOT'
 description = 'Demo project for publishing to Maven Central with Gradle'
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'hi'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'hi'
+                description = 'A concise description of my library'
+                url = 'http://www.example.com/library'
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'http://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'beksultandev'
+                        name = 'Beksultan Mamatkadyr uulu'
+                        email = 'beksultancoder@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'git@github.com:beksultancode/hi.git'
+                    developerConnection = 'git@github.com:beksultancode/hi.git'
+                    url = 'https://github.com/beksultancode/hi'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = 's01.oss.sonatype.org/content/repositories/releases/'
+            def snapshotsRepoUrl = 's01.oss.sonatype.org/content/repositories/snapshots/'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+javadoc {
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
 
 repositories {
     mavenCentral()
